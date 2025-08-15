@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Внешние задачи - Россельхозбанк</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0a5f38;
+      --warning-color: #ff9800;
+      --success-color: #4caf50;
+      --danger-color: #f44336;
+      --info-color: #2196f3;
+      --light-gray: #e0e0e0;
+      --bg-color: #f5f5f5;
+      --text-light: #666;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
+      color: #333;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar { background-color: var(--primary-color); color: white; padding: 20px 0; }
+    .logo { text-align: center; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .nav-menu { margin-top: 20px; display: flex; flex-direction: column; gap: 5px; }
+    .nav-item { padding: 12px 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+    .nav-item:hover, .nav-item.active { background-color: rgba(255,255,255,0.1); }
+    .nav-item a { color: inherit; text-decoration: none; display: flex; align-items: center; width: 100%; }
+    .nav-item i { margin-right: 12px; width: 20px; text-align: center; }
+    .main-content {
+      padding: 20px;
+      background-color: var(--bg-color);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--light-gray);
+      padding-bottom: 15px;
+    }
+    h3 {
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .task-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .new-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--warning-color);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .task-title {
+      font-weight: 500;
+      font-size: 16px;
+    }
+    .task-deadline {
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .overdue {
+      background: #ffebee;
+      color: var(--danger-color);
+    }
+    .soon {
+      background: #fff8e1;
+      color: var(--warning-color);
+    }
+    .normal {
+      background: #e8f5e9;
+      color: var(--primary-color);
+    }
+    .task-meta {
+      margin: 8px 0;
+      font-size: 13px;
+      color: #666;
+    }
+    .task-assignee {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-warning { background: var(--warning-color); color: white; }
+    .btn-success { background: var(--success-color); color: white; }
+    .btn-outline { background: #f5f5f5; border: 1px solid var(--light-gray); color: #333; }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .task-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 500px;
+      max-width: 90%;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
+      padding-bottom: 10px;
+    }
+    .close {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .estimated-load {
+      margin-top: 15px;
+      padding: 10px;
+      background: #e3f2fd;
+      border-radius: 4px;
+      border-left: 4px solid var(--info-color);
+    }
+    .estimated-load p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-estimation { background: #fff3e0; color: var(--warning-color); }
+    .status-re-estimation { background: #ffecb3; color: #e65100; }
+    .status-approved { background: #e8f5e9; color: var(--success-color); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Сайдбар -->
+    <div class="sidebar">
+      <div class="logo">
+        <h3>Россельхозбанк</h3>
+        <p>Управление процессами</p>
+      </div>
+      <div class="nav-menu">
+        <div class="nav-item"><a href="index_.html"><i class="fa fa-list"></i> Задачи</a></div>
+        <div class="nav-item"><a href="create-intra-task.html"><i class="fas fa-building"></i> Внутренние задачи</a></div>
+        <div class="nav-item active"><a href="create-extra-task.html"><i class="fas fa-sitemap"></i> Внешние задачи</a></div>
+        <div class="nav-item"><a href="#"><i class="fas fa-chart-bar"></i> Аналитика</a></div>
+        <!-- Новый пункт: Планировщик -->
+        <div class="nav-item">
+          <a href="planner.html">
+            <i class="fas fa-calendar-alt"></i> Планировщик
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+      <div class="header">
+        <h2><i class="fas fa-sitemap"></i> Внешние задачи</h2>
+        <button class="btn btn-outline" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Назад</button>
+      </div>
+
+      <div class="task-list" id="task-list">
+        <!-- Сюда будут добавляться задачи -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно: оценка трудоёмкости -->
+  <div class="modal" id="estimate-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Оценить трудоёмкость</h3>
+        <span class="close" onclick="closeModal('estimate-modal')">&times;</span>
+      </div>
+      <div>
+        <p><strong>Задача:</strong> <span id="modal-task-name">-</span></p>
+        <p><strong>Запрошено:</strong> <span id="modal-requested">-</span> ч</p>
+        <p><strong>Стандарт:</strong> <span id="modal-standard">8</span> ч</p>
+
+        <div class="form-group">
+          <label>Количество</label>
+          <input type="number" id="calc-volume" value="1.0" step="0.1" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Сложность</label>
+          <select id="calc-complexity" class="form-control">
+            <option value="0.3">0.3 — Очень низкая</option>
+            <option value="0.5">0.5 — Низкая</option>
+            <option value="0.8">0.8 — Умеренная</option>
+            <option value="1.0" selected>1.0 — Стандартная</option>
+            <option value="1.3">1.3 — Повышенная</option>
+            <option value="1.7">1.7 — Высокая</option>
+            <option value="2.5">2.5 — Очень высокая</option>
+          </select>
+        </div>
+        <p><strong>Итого:</strong> <span id="calc-total">8.0</span> ч</p>
+
+        <div class="form-group">
+          <label class="form-label">Исполнитель</label>
+          <select id="calc-assignee" class="form-control">
+            <option value="Петров А.В.">Петров А.В. (УОРиПМ)</option>
+            <option value="Сидорова Е.П.">Сидорова Е.П. (УОРиПМ)</option>
+            <option value="Иванов И.И.">Иванов И.И. (ЭО)</option>
+            <option value="Кузнецова О.Л.">Кузнецова О.Л. (ДИТ)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="submitEstimate()">Отправить на согласование</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно: включить в план -->
+  <div class="modal" id="plan-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Включить в план работ</h3>
+        <span class="close" onclick="closeModal('plan-modal')">&times;</span>
+      </div>
+      <div>
+        <p><strong>Задача:</strong> <span id="plan-task-name">-</span></p>
+        <p><strong>Объём:</strong> <span id="plan-workload">-</span> ч</p>
+        <p><strong>Исполнитель:</strong> <span id="plan-assignee">-</span></p>
+        <div class="form-group">
+          <label>Плановый срок начала</label>
+          <input type="date" id="plan-start" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Плановый срок завершения</label>
+          <input type="date" id="plan-end" class="form-control">
+        </div>
+        <button class="btn btn-success" onclick="confirmPlan()">Включить в план</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === МОК-ДАННЫЕ ===
+    const externalTasks = [
+      {
+        id: 1,
+        name: "Согласовать кредитную заявку #123",
+        requester: "Кредитный отдел",
+        requestedHours: 16,
+        deadline: "2024-08-10",
+        status: "estimation", // будет подсвечена как "новая"
+        comment: null,
+        standardHours: 8,
+        assignee: "Петров А.В.",
+        workload: null,
+        isNew: true // флаг новой задачи
+      },
+      {
+        id: 2,
+        name: "Проверить документы клиента",
+        requester: "Операционный отдел",
+        requestedHours: 8,
+        deadline: "2024-08-05", // просрочено
+        status: "re-estimation",
+        comment: "Объём занижен, требуется 12 ч",
+        standardHours: 4,
+        assignee: "Сидорова Е.П.",
+        workload: null,
+        isNew: false
+      },
+      {
+        id: 3,
+        name: "Обновить реестр клиентов",
+        requester: "УОРиПМ",
+        requestedHours: 10,
+        deadline: "2024-08-15",
+        status: "approved",
+        comment: null,
+        standardHours: 8,
+        assignee: "Кузнецова О.Л.",
+        workload: "10.5",
+        isNew: false
+      }
+    ];
+
+    function sortTasks(tasks) {
+      const now = new Date().toISOString().split('T')[0];
+      return tasks.sort((a, b) => {
+        const aOverdue = a.deadline < now;
+        const bOverdue = b.deadline < now;
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
+        return a.deadline.localeCompare(b.deadline);
+      });
+    }
+
+    function formatDate(dateStr) {
+      const [y, m, d] = dateStr.split('-');
+      return `${d}.${m}.${y}`;
+    }
+
+    function getStatusText(status) {
+      switch(status) {
+        case 'estimation': return 'На оценке';
+        case 're-estimation': return 'На переоценке';
+        case 'approved': return 'Оценка согласована';
+        default: return status;
+      }
+    }
+
+    function renderTaskList() {
+      const container = document.getElementById('task-list');
+      container.innerHTML = '';
+
+      const sorted = sortTasks(externalTasks);
+      sorted.forEach(task => {
+        const now = new Date().toISOString().split('T')[0];
+        const isOverdue = task.deadline < now;
+
+        const card = document.createElement('div');
+        card.className = 'task-card';
+
+        // Индикатор "новое" только для "На оценке"
+        let newIndicator = '';
+        if (task.isNew && task.status === 'estimation') {
+          newIndicator = '<div class="new-indicator">Новое</div>';
+        }
+
+        let commentHtml = '';
+        if (task.comment) {
+          commentHtml = `<div style="color: #f44336; font-size: 13px; margin: 8px 0;"><strong>Комментарий:</strong> ${task.comment}</div>`;
+        }
+
+        let buttonHtml = '';
+        if (task.status === 'estimation') {
+          buttonHtml = `<button class="btn btn-primary" onclick="openEstimateModal(${task.id}, 'estimate')">Оценить</button>`;
+        } else if (task.status === 're-estimation') {
+          buttonHtml = `<button class="btn btn-warning" onclick="openEstimateModal(${task.id}, 're-estimate')">Переоценить</button>`;
+        } else if (task.status === 'approved') {
+          buttonHtml = `<button class="btn btn-success" onclick="openPlanModal(${task.id})">Включить в план работ</button>`;
+        }
+
+        card.innerHTML = `
+          ${newIndicator}
+          <div class="task-header">
+            <div class="task-title">${task.name}</div>
+            <div class="task-deadline ${isOverdue ? 'overdue' : 'normal'}">
+              ${isOverdue ? 'Просрочено!' : formatDate(task.deadline)}
+            </div>
+          </div>
+          <div class="task-meta">
+            <strong>Запросил:</strong> ${task.requester}<br>
+            <strong>Запрошено:</strong> ${task.requestedHours} ч
+          </div>
+          <div class="task-assignee">
+            <div class="avatar">${task.assignee.split(' ').map(n => n[0]).join('')}</div>
+            <div>Исполнитель: ${task.assignee}</div>
+            <button class="btn btn-sm btn-outline" onclick="changeAssignee(${task.id})">Заменить</button>
+          </div>
+          ${commentHtml}
+          <div class="task-actions">
+            ${buttonHtml}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function changeAssignee(taskId) {
+      const task = externalTasks.find(t => t.id === taskId);
+      const newAssignee = prompt(`Текущий исполнитель: ${task.assignee}\nВведите ФИО нового исполнителя:`);
+      if (newAssignee && newAssignee.trim()) {
+        task.assignee = newAssignee.trim();
+        renderTaskList();
+      }
+    }
+
+    function openEstimateModal(id, mode) {
+      const task = externalTasks.find(t => t.id === id);
+      document.getElementById('modal-task-name').textContent = task.name;
+      document.getElementById('modal-requested').textContent = task.requestedHours;
+      document.getElementById('modal-standard').textContent = task.standardHours;
+      document.getElementById('calc-assignee').value = task.assignee;
+      
+      window.currentTaskId = id;
+      document.getElementById('modal-title').textContent = mode === 're-estimate' ? 'Переоценить трудоёмкость' : 'Оценить трудоёмкость';
+
+      document.getElementById('calc-volume').value = 1.0;
+      document.getElementById('calc-complexity').value = 1.0;
+      calculateTotal();
+
+      document.getElementById('estimate-modal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function calculateTotal() {
+      const base = parseFloat(document.getElementById('modal-standard').textContent) || 8;
+      const vol = parseFloat(document.getElementById('calc-volume').value) || 1;
+      const comp = parseFloat(document.getElementById('calc-complexity').value) || 1;
+      const total = (base * vol * comp).toFixed(1);
+      document.getElementById('calc-total').textContent = total;
+    }
+
+    document.getElementById('calc-volume').addEventListener('input', calculateTotal);
+    document.getElementById('calc-complexity').addEventListener('change', calculateTotal);
+
+    function submitEstimate() {
+      const workload = document.getElementById('calc-total').textContent;
+      const assignee = document.getElementById('calc-assignee').value;
+      const taskId = window.currentTaskId;
+
+      const task = externalTasks.find(t => t.id === taskId);
+      task.workload = workload;
+      task.assignee = assignee;
+      task.status = 'approved';
+      task.isNew = false; // снимаем метку "новое"
+      task.comment = null;
+
+      closeModal('estimate-modal');
+      renderTaskList();
+      alert('Оценка отправлена. Задача ожидает включения в план.');
+    }
+
+    function openPlanModal(taskId) {
+      const task = externalTasks.find(t => t.id === taskId);
+      document.getElementById('plan-task-name').textContent = task.name;
+      document.getElementById('plan-workload').textContent = task.workload;
+      document.getElementById('plan-assignee').textContent = task.assignee;
+      window.currentPlanTaskId = taskId;
+      document.getElementById('plan-modal').style.display = 'flex';
+    }
+
+    function confirmPlan() {
+      const start = document.getElementById('plan-start').value;
+      const end = document.getElementById('plan-end').value;
+      if (!start || !end) {
+        alert('Укажите даты начала и завершения');
+        return;
+      }
+      closeModal('plan-modal');
+      alert('Задача включена в план работ.');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTaskList();
+    });
+  </script>
+</body>
+</html>

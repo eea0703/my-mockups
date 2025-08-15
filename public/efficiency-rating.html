@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Россельхозбанк - Оценка эффективности сотрудников</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #0a5f38;
+      --primary-light: #e8f5e9;
+      --secondary-color: #f8f8f8;
+      --success-color: #4caf50;
+      --warning-color: #ff9800;
+      --danger-color: #f44336;
+      --info-color: #2196f3;
+      --text-color: #333;
+      --text-light: #666;
+      --light-gray: #e0e0e0;
+      --dark-gray: #757575;
+      --bg-color: #f5f5f5;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: var(--text-light);
+      font-size: 16px;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .select-control {
+      padding: 10px 14px;
+      border: 1px solid var(--light-gray);
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      background: #0b4b2c;
+    }
+    .section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .employee-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+    }
+    .employee-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      background: #fafafa;
+    }
+    .employee-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .name {
+      font-weight: 500;
+    }
+    .department {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .kpi-list {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .kpi-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed #eee;
+    }
+    .kpi-item:last-child {
+      border-bottom: none;
+    }
+    .value {
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+    .badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary-color);
+    }
+    .chart-container {
+      height: 300px;
+      margin-top: 15px;
+    }
+    .heatmap {
+      display: grid;
+      grid-template-columns: 1fr 70px repeat(7, 1fr);
+      gap: 2px;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+    .heatmap .day-label {
+      text-align: right;
+      color: var(--text-light);
+      padding-right: 5px;
+    }
+    .heatmap .time-label {
+      background: #eee;
+      padding: 5px;
+      text-align: center;
+    }
+    .heatmap-cell {
+      width: 100%;
+      height: 20px;
+      border-radius: 3px;
+      background: #e0f7fa;
+    }
+    .heatmap-cell.low { background: #e0f7fa; }
+    .heatmap-cell.medium { background: #80deea; }
+    .heatmap-cell.high { background: #00acc1; color: white; }
+    .heatmap-cell.very-high { background: #006064; color: white; }
+    .ranking {
+      list-style: none;
+    }
+    .ranking li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .rank {
+      font-weight: bold;
+      width: 20px;
+    }
+    .recommendation {
+      padding: 15px;
+      background: #fff8e1;
+      border-left: 4px solid var(--warning-color);
+      border-radius: 4px;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .heatmap {
+        grid-template-columns: 1fr 50px repeat(7, 1fr);
+        font-size: 10px;
+      }
+      .heatmap-cell {
+        height: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-chart-line"></i> Оценка эффективности сотрудников</h1>
+      <p class="subtitle">Аналитика за последние 30 дней • Отдел: УОРиПМ</p>
+      <div style="margin-bottom: 20px; text-align: right;">
+  <a href="index.html">
+    <button class="btn btn-outline">
+      <i class="fas fa-arrow-left"></i> Назад к управлению задачами
+    </button>
+  </a>
+</div>
+    </header>
+
+    <div class="controls">
+      <select class="select-control" id="period-select">
+        <option>Последние 30 дней</option>
+        <option>Последние 90 дней</option>
+        <option>Текущий квартал</option>
+        <option>Год</option>
+      </select>
+      <select class="select-control" id="department-select">
+        <option>УОРиПМ</option>
+        <option>ЭО</option>
+        <option>УПМ</option>
+        <option>УПМ</option>
+      </select>
+      <button class="btn"><i class="fas fa-download"></i> Экспорт в PDF</button>
+    </div>
+
+    <!-- Рейтинг эффективности -->
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-trophy"></i> Топ-5 по эффективности</h3>
+      <ol class="ranking">
+        <li><span class="rank">1</span> <span>Петров А.В.</span> <span class="value">92%</span></li>
+        <li><span class="rank">2</span> <span>Сидорова Е.П.</span> <span class="value">88%</span></li>
+        <li><span class="rank">3</span> <span>Иванов И.И.</span> <span class="value">78%</span></li>
+        <li><span class="rank">4</span> <span>Кузнецова О.Л.</span> <span class="value">75%</span></li>
+        <li><span class="rank">5</span> <span>Смирнов Д.М.</span> <span class="value">72%</span></li>
+      </ol>
+    </div>
+
+    <!-- Карточки сотрудников -->
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-user-tie"></i> Персональная эффективность</h3>
+      <div class="employee-grid" id="employee-grid">
+        <!-- Будет заполнено через JS -->
+      </div>
+    </div>
+
+    <!-- График сравнения -->
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-chart-bar"></i> Сравнение по ключевым метрикам</h3>
+      <div class="chart-container">
+        <canvas id="comparisonChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Тепловая карта активности -->
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-fire"></i> Тепловая карта активности (средняя нагрузка)</h3>
+      <div class="heatmap">
+        <div></div><div></div><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+        <div class="day-label">Утро</div><div class="time-label">08-12</div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell very-high"></div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell medium"></div>
+        <div class="heatmap-cell low"></div>
+        <div class="heatmap-cell low"></div>
+        <div class="day-label">День</div><div class="time-label">12-16</div>
+        <div class="heatmap-cell very-high"></div>
+        <div class="heatmap-cell very-high"></div>
+        <div class="heatmap-cell very-high"></div>
+        <div class="heatmap-cell very-high"></div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell low"></div>
+        <div class="heatmap-cell low"></div>
+        <div class="day-label">Вечер</div><div class="time-label">16-20</div>
+        <div class="heatmap-cell medium"></div>
+        <div class="heatmap-cell medium"></div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell high"></div>
+        <div class="heatmap-cell medium"></div>
+        <div class="heatmap-cell low"></div>
+        <div class="heatmap-cell low"></div>
+      </div>
+    </div>
+
+    <!-- Рекомендации -->
+    <div class="section">
+      <h3 class="section-title"><i class="fas fa-lightbulb"></i> Рекомендации по улучшению</h3>
+      <div class="recommendation">
+        <strong>Петров А.В.</strong> имеет высокий % выполнения, но 4 возврата заявок — рекомендуем провести аудит качества подготовки документов.
+      </div>
+      <div class="recommendation">
+        <strong>Иванов И.И.</strong> часто сталкивается с задержками согласований — предложите подключить автоматические напоминания.
+      </div>
+      <div class="recommendation">
+        <strong>Сидорова Е.П.</strong> — лидер по эффективности. Рассмотрите возможность назначения наставником.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Мок-данные с новым показателем: возвраты на доработку
+    const employees = [
+      { name: "Петров А.В.", dept: "УОРиПМ", completion: 92, avgTime: 1.8, returns: 4, tasks: 32 },
+      { name: "Сидорова Е.П.", dept: "УОРиПМ", completion: 88, avgTime: 2.1, returns: 1, tasks: 28 },
+      { name: "Иванов И.И.", dept: "УОРиПМ", completion: 78, avgTime: 3.0, returns: 3, tasks: 30 },
+      { name: "Кузнецова О.Л.", dept: "ЭО", completion: 75, avgTime: 2.5, returns: 2, tasks: 25 },
+      { name: "Смирнов Д.М.", dept: "ЭО", completion: 72, avgTime: 2.8, returns: 4, tasks: 22 },
+      { name: "Васильева А.К.", dept: "УПМ", completion: 68, avgTime: 4.1, returns: 0, tasks: 18 },
+      { name: "Николаев П.С.", dept: "УПМ", completion: 65, avgTime: 3.5, returns: 2, tasks: 20 }
+    ];
+
+    // Рендер карточек сотрудников
+    function renderEmployeeCards() {
+      const container = document.getElementById('employee-grid');
+      container.innerHTML = '';
+      employees.forEach(emp => {
+        const card = document.createElement('div');
+        card.className = 'employee-card';
+        card.innerHTML = `
+          <div class="employee-header">
+            <div class="avatar">${emp.name.split(' ').map(n => n[0]).join('')}</div>
+            <div>
+              <div class="name">${emp.name}</div>
+              <div class="department">${emp.dept}</div>
+            </div>
+          </div>
+          <div class="kpi-list">
+            <div class="kpi-item">
+              <span>Выполнено задач</span>
+              <span class="value">${emp.tasks}</span>
+            </div>
+            <div class="kpi-item">
+              <span>% выполнения</span>
+              <span class="value">${emp.completion}%</span>
+            </div>
+            <div class="kpi-item">
+              <span>Ср. время (дни)</span>
+              <span class="value">${emp.avgTime}</span>
+            </div>
+            <div class="kpi-item">
+              <span>Возвраты на доработку</span>
+              <span class="value">${emp.returns}</span>
+            </div>
+          </div>
+          <div style="margin-top: 10px;">
+            <span class="badge">${emp.returns === 0 ? 'Без возвратов' : emp.returns <= 2 ? 'Низкий уровень' : 'Требует внимания'}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // График сравнения
+    function initComparisonChart() {
+      const ctx = document.getElementById('comparisonChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: employees.map(e => e.name.split(' ')[0]),
+          datasets: [
+            {
+              label: '% выполнения',
+              data: employees.map(e => e.completion),
+              backgroundColor: '#0a5f38',
+              borderRadius: 4
+            },
+            {
+              label: 'Возвраты на доработку',
+              data: employees.map(e => e.returns),
+              backgroundColor: '#f44336',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+      renderEmployeeCards();
+      initComparisonChart();
+
+      // Обновление данных при изменении фильтров
+      document.getElementById('period-select').addEventListener('change', () => {
+        alert('Фильтр периода изменён — данные обновлены');
+      });
+      document.getElementById('department-select').addEventListener('change', () => {
+        alert('Фильтр подразделения изменён — данные обновлены');
+      });
+    });
+  </script>
+</body>
+</html>

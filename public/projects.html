@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Россельхозбанк - Управление проектами</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #0a5f38;
+      --primary-light: #e8f5e9;
+      --secondary-color: #f8f8f8;
+      --success-color: #4caf50;
+      --warning-color: #ff9800;
+      --danger-color: #f44336;
+      --info-color: #2196f3;
+      --text-color: #333;
+      --text-light: #666;
+      --light-gray: #e0e0e0;
+      --dark-gray: #757575;
+      --bg-color: #f5f5f5;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      line-height: 1.5;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px 0;
+    }
+
+    .logo {
+      text-align: center;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-menu {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item i {
+      margin-right: 12px;
+      width: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .nav-item a {
+      color: inherit;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .main-content {
+      padding: 20px;
+      background-color: var(--bg-color);
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    .card-title i {
+      margin-right: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #0b4b2c;
+    }
+    
+    .btn-outline {
+      background-color: white;
+      border: 1px solid var(--light-gray);
+      color: var(--text-color);
+    }
+    
+    .btn-outline:hover {
+      background-color: #f5f5f5;
+    }
+    
+    /* Стили для проектов */
+    .project-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .metric-card.warning {
+      border-left: 4px solid var(--warning-color);
+    }
+    
+    .metric-card.danger {
+      border-left: 4px solid var(--danger-color);
+    }
+    
+    .metric-value {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+    
+    .metric-label {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    
+    .project-filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 180px;
+    }
+    
+    .filter-label {
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    
+    .form-control {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--light-gray);
+      font-size: 14px;
+    }
+    
+    .project-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .view-switcher {
+      display: flex;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: auto;
+    }
+    
+    .view-btn {
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+    
+    .view-btn.active {
+      background: var(--primary-light);
+      color: var(--primary-color);
+    }
+    
+    /* Стили для таблицы проектов */
+    .project-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .project-table th {
+      text-align: left;
+      padding: 12px 15px;
+      background-color: #f8f8f8;
+      font-weight: 500;
+      color: var(--text-color);
+      border-bottom: 2px solid var(--light-gray);
+    }
+    
+    .project-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--light-gray);
+      vertical-align: middle;
+    }
+    
+    .project-table tr:hover {
+      background-color: var(--primary-light);
+    }
+    
+    .project-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    
+    .status-planning {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .status-active {
+      background-color: #e8f5e9;
+      color: var(--success-color);
+    }
+    
+    .status-paused {
+      background-color: #fff8e1;
+      color: var(--warning-color);
+    }
+    
+    .status-completed {
+      background-color: #f5f5f5;
+      color: var(--text-light);
+    }
+    
+    .priority-high {
+      color: var(--danger-color);
+      font-weight: 500;
+    }
+    
+    .priority-medium {
+      color: var(--warning-color);
+    }
+    
+    .priority-low {
+      color: var(--success-color);
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress {
+      height: 100%;
+      background-color: var(--primary-color);
+      border-radius: 3px;
+    }
+    
+    .team-avatars {
+      display: flex;
+    }
+    
+    .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #ccc;
+      margin-right: -8px;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+    }
+    
+    /* Стили для канбан-доски */
+    .project-board {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding-bottom: 15px;
+    }
+    
+    .board-column {
+      min-width: 280px;
+      background: #f8f8f8;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .board-title {
+      font-weight: 500;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .project-card {
+      background: white;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    
+    .project-card:hover {
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    
+    .project-card-title {
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .project-card-priority {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    
+    .high-priority {
+      background-color: #ffebee;
+      color: var(--danger-color);
+    }
+    
+    .project-card-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .project-metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .project-filters {
+        flex-direction: column;
+      }
+      
+      .filter-group {
+        width: 100%;
+      }
+      
+      .project-actions {
+        flex-wrap: wrap;
+      }
+      
+      .project-table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+    <!-- Сайдбар -->
+    <div class="sidebar">
+      <div class="logo">
+        <h3>Россельхозбанк</h3>
+        <p>Управление процессами</p>
+      </div>
+      <div class="nav-menu">
+        <div class="nav-item"><a href="index.html"><i class="fa fa-list"></i> Задачи</a></div>
+        <div class="nav-item"><a href="processes.html"><i class="fas fa-project-diagram"></i> Процессы</a></div>
+        <div class="nav-item"><a href="projects.html"><i class="fas fa-briefcase"></i> Проекты</a></div>
+        <div class="nav-item"><a href="#"><i class="fas fa-tasks"></i> Мои задачи</a></div>
+        <div class="nav-item"><a href="#"><i class="fas fa-chart-bar"></i> Аналитика</a></div>
+        <div class="nav-item"><a href="#"><i class="fas fa-cog"></i> Настройки</a></div>
+        <div class="nav-item"><a href="planner.html"><i class="fas fa-calendar-alt"></i> Планировщик</a></div>
+        <!-- Новый пункт: Матрица компетенций -->
+        <div class="nav-item active">
+          <a href="competency-matrix.html">
+            <i class="fas fa-th"></i> Матрица компетенций
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="header">
+        <h2><i class="fas fa-briefcase"></i> Управление проектами</h2>
+        <input type="text" class="form-control" placeholder="Поиск проектов..." style="min-width: 250px;">
+      </div>
+      
+      <div class="project-metrics">
+        <div class="metric-card">
+          <div class="metric-value">18</div>
+          <div class="metric-label">Всего проектов</div>
+        </div>
+        <div class="metric-card warning">
+          <div class="metric-value">4</div>
+          <div class="metric-label">Под угрозой</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">82%</div>
+          <div class="metric-label">Выполнения плана</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">₽5.2М</div>
+          <div class="metric-label">Использовано бюджета</div>
+        </div>
+        <div class="metric-card danger">
+          <div class="metric-value">2</div>
+          <div class="metric-label">Критические</div>
+        </div>
+      </div>
+      
+      <div class="project-filters">
+        <div class="filter-group">
+          <label class="filter-label">Статус</label>
+          <select class="form-control">
+            <option>Все статусы</option>
+            <option>Планирование</option>
+            <option>В работе</option>
+            <option>На паузе</option>
+            <option>Завершен</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Приоритет</label>
+          <select class="form-control">
+            <option>Любой приоритет</option>
+            <option>Высокий</option>
+            <option>Средний</option>
+            <option>Низкий</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Руководитель</label>
+          <select class="form-control">
+            <option>Все руководители</option>
+            <option>Иванов И.И.</option>
+            <option>Петрова А.В.</option>
+            <option>Сидоров П.М.</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Период</label>
+          <div style="display: flex; gap: 5px;">
+            <input type="date" class="form-control">
+            <input type="date" class="form-control">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Бюджет</label>
+          <select class="form-control">
+            <option>Любой бюджет</option>
+            <option>До ₽500К</option>
+            <option>₽500К-₽2М</option>
+            <option>Более ₽2М</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="project-actions">
+        <button class="btn btn-primary">
+          <i class="fas fa-plus"></i> Новый проект
+        </button>
+        <button class="btn btn-outline">
+          <i class="fas fa-download"></i> Экспорт
+        </button>
+        <button class="btn btn-outline">
+          <i class="fas fa-filter"></i> Доп. фильтры
+        </button>
+        
+        <div class="view-switcher">
+          <button class="view-btn active" data-view="table">
+            <i class="fas fa-table"></i>
+          </button>
+          <button class="view-btn" data-view="kanban">
+            <i class="fas fa-th-large"></i>
+          </button>
+          <button class="view-btn" data-view="timeline">
+            <i class="fas fa-calendar-alt"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Табличное представление -->
+      <div class="card" id="table-view">
+        <table class="project-table">
+          <thead>
+            <tr>
+              <th>Название проекта</th>
+              <th>Статус</th>
+              <th>Руководитель</th>
+              <th>Сроки</th>
+              <th>Прогресс</th>
+              <th>Приоритет</th>
+              <th>Бюджет</th>
+              <th>Команда</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Цифровизация КФК</td>
+              <td><span class="project-status status-active"><i class="fas fa-play-circle"></i> В работе</span></td>
+              <td>Иванов И.И.</td>
+              <td>15.08 - 30.11.2024</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress" style="width: 65%"></div>
+                </div>
+                <small>65%</small>
+              </td>
+              <td class="priority-high">Высокий</td>
+              <td>₽3.2М</td>
+              <td>
+                <div class="team-avatars">
+                  <div class="avatar" style="background-color: #4caf50;">ИИ</div>
+                  <div class="avatar" style="background-color: #2196f3;">ПА</div>
+                  <div class="avatar" style="background-color: #ff9800;">+3</div>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">
+                  <i class="fas fa-ellipsis-h"></i>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>Обновление процессинга</td>
+              <td><span class="project-status status-active"><i class="fas fa-play-circle"></i> В работе</span></td>
+              <td>Петрова А.В.</td>
+              <td>01.09 - 15.12.2024</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress" style="width: 30%"></div>
+                </div>
+                <small>30%</small>
+              </td>
+              <td class="priority-high">Высокий</td>
+              <td>₽4.5М</td>
+              <td>
+                <div class="team-avatars">
+                  <div class="avatar" style="background-color: #f44336;">ПА</div>
+                  <div class="avatar" style="background-color: #9c27b0;">СМ</div>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">
+                  <i class="fas fa-ellipsis-h"></i>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>Внедрение CRM</td>
+              <td><span class="project-status status-planning"><i class="fas fa-pause-circle"></i> Планирование</span></td>
+              <td>Сидоров П.М.</td>
+              <td>01.10 - 31.03.2025</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress" style="width: 15%"></div>
+                </div>
+                <small>15%</small>
+              </td>
+              <td class="priority-medium">Средний</td>
+              <td>₽6.0М</td>
+              <td>
+                <div class="team-avatars">
+                  <div class="avatar" style="background-color: #607d8b;">СП</div>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">
+                  <i class="fas fa-ellipsis-h"></i>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>Модернизация ДБО</td>
+              <td><span class="project-status status-paused"><i class="fas fa-stop-circle"></i> На паузе</span></td>
+              <td>Кузнецова О.Л.</td>
+              <td>01.07 - 30.09.2024</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress" style="width: 40%"></div>
+                </div>
+                <small>40%</small>
+              </td>
+              <td class="priority-medium">Средний</td>
+              <td>₽2.8М</td>
+              <td>
+                <div class="team-avatars">
+                  <div class="avatar" style="background-color: #ff5722;">КО</div>
+                  <div class="avatar" style="background-color: #795548;">НД</div>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">
+                  <i class="fas fa-ellipsis-h"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Канбан-доска (скрыта по умолчанию) -->
+      <div class="card" id="kanban-view" style="display: none;">
+        <div class="project-board">
+          <div class="board-column">
+            <div class="board-title">
+              <span>Планирование <span class="badge">2</span></span>
+              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 12px;">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Внедрение CRM</span>
+                <span class="project-card-priority high-priority">Высокий</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 15%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.10 - 31.03.2025</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽6.0М</span>
+              </div>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Обновление ИБ</span>
+                <span class="project-card-priority high-priority">Высокий</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 5%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 15.11 - 30.04.2025</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽3.5М</span>
+              </div>
+            </div>
+          </div>
+          <div class="board-column">
+            <div class="board-title">
+              <span>В работе <span class="badge">3</span></span>
+              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 12px;">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Цифровизация КФК</span>
+                <span class="project-card-priority high-priority">Высокий</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 65%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 15.08 - 30.11.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽3.2М</span>
+              </div>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Обновление процессинга</span>
+                <span class="project-card-priority high-priority">Высокий</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 30%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.09 - 15.12.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽4.5М</span>
+              </div>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Автоматизация отчетности</span>
+                <span class="project-card-priority">Средний</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 45%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.08 - 15.11.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽1.8М</span>
+              </div>
+            </div>
+          </div>
+          <div class="board-column">
+            <div class="board-title">
+              <span>На паузе <span class="badge">1</span></span>
+              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 12px;">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Модернизация ДБО</span>
+                <span class="project-card-priority">Средний</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 40%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.07 - 30.09.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽2.8М</span>
+              </div>
+            </div>
+          </div>
+          <div class="board-column">
+            <div class="board-title">
+              <span>Завершено <span class="badge">2</span></span>
+              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 12px;">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Обновление сайта</span>
+                <span class="project-card-priority">Низкий</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 100%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.05 - 30.06.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽1.2М</span>
+              </div>
+            </div>
+            <div class="project-card">
+              <div class="project-card-title">
+                <span>Внедрение чат-бота</span>
+                <span class="project-card-priority">Средний</span>
+              </div>
+              <div class="progress-bar" style="margin: 8px 0;">
+                <div class="progress" style="width: 100%"></div>
+              </div>
+              <div class="project-card-footer">
+                <span><i class="far fa-calendar"></i> 01.03 - 30.04.2024</span>
+                <span><i class="far fa-money-bill-alt"></i> ₽0.9М</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Timeline представление (скрыто по умолчанию) -->
+      <div class="card" id="timeline-view" style="display: none;">
+        <div style="height: 400px; overflow-y: auto;">
+          <div style="border-left: 2px solid #eee; padding-left: 20px; margin-left: 10px;">
+            <div style="position: relative; padding-bottom: 30px;">
+              <div style="position: absolute; left: -25px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-color);"></div>
+              <div style="font-weight: 500; color: var(--primary-color);">Август 2024</div>
+              
+              <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between;">
+                  <h4 style="margin: 0;">Цифровизация КФК</h4>
+                  <span class="project-status status-active"><i class="fas fa-play-circle"></i> В работе</span>
+                </div>
+                <div style="margin: 10px 0;">
+                  <div class="progress-bar">
+                    <div class="progress" style="width: 65%"></div>
+                  </div>
+                  <small>65% выполнено (15.08 - 30.11.2024)</small>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                  <span><i class="fas fa-user"></i> Иванов И.И.</span>
+                  <span><i class="fas fa-money-bill-wave"></i> ₽3.2М</span>
+                </div>
+              </div>
+            </div>
+            
+            <div style="position: relative; padding-bottom: 30px;">
+              <div style="position: absolute; left: -25px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-color);"></div>
+              <div style="font-weight: 500; color: var(--primary-color);">Сентябрь 2024</div>
+              
+              <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between;">
+                  <h4 style="margin: 0;">Обновление процессинга</h4>
+                  <span class="project-status status-active"><i class="fas fa-play-circle"></i> В работе</span>
+                </div>
+                <div style="margin: 10px 0;">
+                  <div class="progress-bar">
+                    <div class="progress" style="width: 30%"></div>
+                  </div>
+                  <small>30% выполнено (01.09 - 15.12.2024)</small>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                  <span><i class="fas fa-user"></i> Петрова А.В.</span>
+                  <span><i class="fas fa-money-bill-wave"></i> ₽4.5М</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Другие проекты на timeline -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Переключение между видами
+    document.addEventListener('DOMContentLoaded', function() {
+      const viewBtns = document.querySelectorAll('.view-btn');
+      const views = {
+        table: document.getElementById('table-view'),
+        kanban: document.getElementById('kanban-view'),
+        timeline: document.getElementById('timeline-view')
+      };
+      
+      viewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const viewName = this.getAttribute('data-view');
+          
+          // Убрать активный класс у всех кнопок
+          viewBtns.forEach(b => b.classList.remove('active'));
+          // Добавить активный класс текущей кнопке
+          this.classList.add('active');
+          
+          // Скрыть все представления
+          Object.values(views).forEach(view => view.style.display = 'none');
+          // Показать выбранное представление
+          views[viewName].style.display = 'block';
+        });
+      });
+      
+      // Имитация действий
+      document.querySelectorAll('.project-card, .project-table tbody tr').forEach(item => {
+        item.addEventListener('click', function() {
+          const projectName = this.querySelector('td:first-child')?.textContent || 
+                            this.querySelector('.project-card-title span')?.textContent;
+          console.log(`Открытие проекта: ${projectName}`);
+        });
+      });
+      
+      // Имитация создания проекта
+      document.querySelector('.btn-primary').addEventListener('click', function() {
+        console.log('Открытие формы создания проекта');
+      });
+    });
+  </script>
+</body>
+</html>
